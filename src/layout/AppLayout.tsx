@@ -6,7 +6,8 @@ const { Content, Footer } = Layout
 
 const AppLayout: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout style={{ minHeight: '100vh'}}>
+
       <HeaderBar />
       <Content style={{ padding: '24px', maxWidth: 1200, margin: '0 auto' }}>
         {children}
