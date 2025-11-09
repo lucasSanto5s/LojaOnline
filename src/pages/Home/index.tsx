@@ -64,11 +64,11 @@ const Home: React.FC = () => {
         </div>
       ) : (
         <Row
-          gutter={[24, 24]}
+          gutter={[32, 32]}
           justify="center"
           style={{
-            marginTop: 16,
-            maxWidth: 1400,
+            marginTop: 32,
+            maxWidth: 1800,
             marginInline: 'auto',
           }}
         >
@@ -76,59 +76,30 @@ const Home: React.FC = () => {
             <Col key={p.id} xs={24} sm={12} md={8} lg={6} xl={4}>
               <Card
                 hoverable
-                style={{
-                  textAlign: 'center',
-                  borderRadius: 8,
-                }}
-                bodyStyle={{
-                  padding: 12,                 // compacto
-                }}
+                style={{ textAlign: 'center', borderRadius: 8, width: 280 }}
+                bodyStyle={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'center' }}
               >
-                <div
-                  style={{
-                    display: 'grid',
-                    placeItems: 'center',
-                    width: 140,
-                    height: 140,               // menor
-                    margin: '0 auto 8px',
-                  }}
-                >
-                  <Image
-                    src={p.image}
-                    alt={p.title}
-                    width={140}
-                    height={140}
-                    style={{ objectFit: 'contain' }}
-                    preview
-                  />
+                <div style={{ display: 'grid', placeItems: 'center', width: 180, height: 180, marginBottom: 6 }}>
+                  <Image src={p.image} alt={p.title} width={180} height={180} style={{ objectFit: 'contain' }} preview />
                 </div>
 
-                <Paragraph
-                  strong
-                  ellipsis={{ rows: 1 }}
-                  style={{ margin: 0 }}        // tira espaço extra
-                >
-                  {p.title}
-                </Paragraph>
+                {/* Container de texto com largura fixa do card */}
+                <div style={{ width: '100%', maxWidth: 248 }}>
+                  <Paragraph strong ellipsis={{ rows: 1, tooltip: p.title }} style={{ margin: 0 }}>
+                    {p.title}
+                  </Paragraph>
+                  <Paragraph type="secondary" ellipsis={{ rows: 2, tooltip: p.description }} style={{ margin: '4px 0 8px' }}>
+                    {p.description}
+                  </Paragraph>
+                </div>
 
-                <Paragraph
-                  type="secondary"
-                  ellipsis={{ rows: 2 }}
-                  style={{ margin: '4px 0 8px' }}
-                >
-                  {p.description}
-                </Paragraph>
-
-                <Button
-                  type="text"
-                  icon={<EyeFilled />}
-                  onClick={showEyeError}
-                  style={{ padding: 0, height: 24, lineHeight: 1, alignSelf: 'center' }}
-                />
+                <Button type="text" icon={<EyeFilled />} onClick={showEyeError} style={{ padding: 0, height: 28 }} />
               </Card>
+
             </Col>
           ))}
         </Row>
+
       )}
     </div>
   )

@@ -10,14 +10,28 @@ import '@/styles/globals.css'
 
 function ThemedApp() {
   const mode = useAppSelector((s) => s.ui.theme)
+
+  // seleciona algoritmo claro/escuro
+  const algorithm =
+    mode === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm
+
+  // aplica cor de fundo global conforme o tema
+  React.useEffect(() => {
+    const root = document.documentElement
+    root.style.setProperty(
+      '--app-bg-color',
+      mode === 'dark' ? '#141414' : '#f5f5f5'
+    )
+  }, [mode])
+
   return (
     <ConfigProvider
       theme={{
-        algorithm:
-          mode === 'dark'
-            ? antdTheme.darkAlgorithm
-            : antdTheme.defaultAlgorithm,
-        token: { borderRadius: 8 },
+        algorithm,
+        token: {
+          borderRadius: 8,
+          colorBgLayout: 'var(--app-bg-color)',
+        },
       }}
     >
       <AntApp>

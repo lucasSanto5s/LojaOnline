@@ -1,12 +1,16 @@
 html, body, #root { height: 100%; }
 * { box-sizing: border-box; }
 
-html, body, #root { height: 100%; }
 
-/* ADICIONE isto: */
-html, body {
-  margin: 0;                               /* tira as “bordas” do navegador */
-  background: var(--ant-color-bg-layout);  /* fundo do tema ocupa tudo */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: var(--app-bg-color);
+  transition: background 0.3s ease;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
