@@ -1,34 +1,20 @@
 import React from 'react'
 import {
   Typography, List, Image, Rate, Button, Flex, Space, Input,
-  Drawer, Form, InputNumber, Popconfirm, App, message, Select
+  Drawer, Form, InputNumber, Popconfirm, App, Select
 } from 'antd'
 import { PlusOutlined, EditOutlined, DeleteOutlined, ShoppingCartOutlined } from '@ant-design/icons'
 import { useAppDispatch, useAppSelector } from '@/store'
 import { fetchAllProducts } from '@/services/fakestore'
-import {
-  CATEGORIES,
-  setAll,
-  addProduct,
-  updateProduct,
-  removeProduct,
-  type Product
-} from '@/store/slices/productsSlice'
+import { CATEGORIES, setAll, setQuery, addProduct, updateProduct, removeProduct, type Product } from '@/store/slices/productsSlice'
+import { useNavigate } from 'react-router-dom'
 
 const { Title, Paragraph, Text } = Typography
 
-type FormValues = {
-  id?: number
-  title: string
-  price: number
-  description: string
-  image: string
-  category?: string
-}
-
 const Products: React.FC = () => {
   const dispatch = useAppDispatch()
-  const { notification } = App.useApp()
+  const navigate = useNavigate()
+  const { message } = App.useApp()
 
   const user = useAppSelector(s => s.auth.currentUser)
   const isAdmin = user?.role === 'admin'
@@ -37,22 +23,13 @@ const Products: React.FC = () => {
   const loaded = useAppSelector(s => s.products.loaded)
   const query = useAppSelector(s => s.products.query)
 
-  // lista filtrada pela busca do header
-  const list = React.useMemo(
-    () => products.filter(p =>
-      p.title.toLowerCase().includes(query.toLowerCase().trim())
-    ),
-    [products, query]
-  )
-
   const [open, setOpen] = React.useState(false)
   const [editing, setEditing] = React.useState<Product | null>(null)
-  const [form] = Form.useForm<FormValues>()
+  const [form] = Form.useForm()
 
-  // carrega base inicial se não houver nada no localStorage
+  // carrega base inicial se não houver nada
   React.useEffect(() => {
-    if (loaded) return
-    if (products.length > 0) return
+    if (loaded || products.length > 0) return
     ;(async () => {
       try {
         const api = await fetchAllProducts()
@@ -72,12 +49,16 @@ const Products: React.FC = () => {
 
   // === ações ===
   const onBuy = (p: Product) => {
-    try {
-      dispatch({ type: 'cart/addItem', payload: { id: p.id, title: p.title, price: p.price, image: p.image, qty: 1 } })
-      message.success('Produto adicionado ao carrinho')
-    } catch {
-      message.error('Erro ao adicionar ao carrinho')
+    if (!user) {
+      message.warning('Faça login para adicionar itens ao carrinho.')
+      navigate('/login')
+      return
     }
+    dispatch({
+      type: 'cart/addItem',
+      payload: { id: p.id, title: p.title, price: p.price, image: p.image, qty: 1 }
+    })
+    message.success('Produto adicionado ao carrinho')
   }
 
   const openCreate = () => {
@@ -96,21 +77,26 @@ const Products: React.FC = () => {
     const values = await form.validateFields()
     if (editing) {
       dispatch(updateProduct({ ...(editing as Product), ...values }))
-      notification.success({ message: 'Produto atualizado' })
+      message.success('Produto atualizado')
     } else {
       dispatch(addProduct(values))
-      notification.success({ message: 'Produto criado' })
+      message.success('Produto criado')
     }
     setOpen(false)
   }
 
   const onDelete = (id: number) => {
     dispatch(removeProduct(id))
-    notification.success({ message: 'Produto excluído' })
+    message.success('Produto excluído')
   }
 
+  const list = React.useMemo(
+    () => products.filter(p => p.title.toLowerCase().includes(query.toLowerCase().trim())),
+    [products, query]
+  )
+
   return (
-    <div style={{ width: '100%', maxWidth: 1600, margin: '0 auto' }}>
+    <>
       {/* === Header da Página === */}
       <Flex justify="space-between" align="center" style={{ marginBottom: 24 }}>
         <Title level={2} style={{ margin: 0 }}>
@@ -126,7 +112,7 @@ const Products: React.FC = () => {
       {/* === Lista === */}
       <List
         grid={{ gutter: 24, xs: 1, sm: 2, md: 2, lg: 3, xl: 4, xxl: 5 }}
-        dataSource={list} // ⬅ usa a filtrada
+        dataSource={list}
         renderItem={(p) => (
           <List.Item key={p.id}>
             <div
@@ -145,7 +131,6 @@ const Products: React.FC = () => {
 
                 <Text strong ellipsis={{ tooltip: p.title }}>{p.title}</Text>
 
-                {/* Categoria logo abaixo do título */}
                 {p.category && (
                   <Text type="secondary" style={{ fontSize: 13 }}>
                     {p.category}
@@ -176,7 +161,11 @@ const Products: React.FC = () => {
                         </Popconfirm>
                       </>
                     )}
-                    <Button type="primary" icon={<ShoppingCartOutlined />} onClick={() => onBuy(p)}>
+                    <Button
+                      type="primary"
+                      icon={<ShoppingCartOutlined />}
+                      onClick={() => onBuy(p)}
+                    >
                       Buy
                     </Button>
                   </Space>
@@ -197,48 +186,32 @@ const Products: React.FC = () => {
         maskClosable={false}
       >
         <Form layout="vertical" form={form} initialValues={{ price: 0 }}>
-          <Form.Item
-            name="title"
-            label="Title"
-            rules={[{ required: true, message: 'Informe o título' }]}
-          >
+          <Form.Item name="title" label="Title" rules={[{ required: true, message: 'Informe o título' }]}>
             <Input />
           </Form.Item>
 
-          <Form.Item
-            name="description"
-            label="Description"
-            rules={[{ required: true, message: 'Informe a descrição' }]}
-          >
+          <Form.Item name="description" label="Description" rules={[{ required: true, message: 'Informe a descrição' }]}>
             <Input.TextArea rows={3} />
           </Form.Item>
 
-          {/* Categoria como Select (lista de opções) */}
           <Form.Item
             name="category"
             label="Category"
-            rules={[{ required: true, message: 'Escolha a categoria' }]}
+            rules={[{ required: true, message: 'Selecione a categoria' }]}
           >
             <Select
               placeholder="Selecione a categoria"
-              options={CATEGORIES.map(c => ({ value: c, label: c }))}
+              options={CATEGORIES.map(c => ({ label: c, value: c }))}
               showSearch
+              optionFilterProp="label"
             />
           </Form.Item>
 
-          <Form.Item
-            name="price"
-            label="Price (US$)"
-            rules={[{ required: true, message: 'Informe o preço' }]}
-          >
+          <Form.Item name="price" label="Price (US$)" rules={[{ required: true, message: 'Informe o preço' }]}>
             <InputNumber min={0} step={0.01} style={{ width: '100%' }} />
           </Form.Item>
 
-          <Form.Item
-            name="image"
-            label="Image URL"
-            rules={[{ required: true, message: 'Informe a URL da imagem' }]}
-          >
+          <Form.Item name="image" label="Image URL" rules={[{ required: true, message: 'Informe a URL da imagem' }]}>
             <Input placeholder="https://..." />
           </Form.Item>
 
@@ -250,7 +223,7 @@ const Products: React.FC = () => {
           </Flex>
         </Form>
       </Drawer>
-    </div>
+    </>
   )
 }
 
