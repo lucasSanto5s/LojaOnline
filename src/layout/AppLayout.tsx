@@ -14,19 +14,23 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     >
       <Header
         style={{
-          background: '#e6f4ff', // azul claro do exemplo
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          height: 64,
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          background: '#e6f4ff',            // azul claro do exemplo
+          height: 64,                        // altura fixa
           paddingInline: 32,
-          boxShadow: 'rgba(0, 0, 0, 0.1) 0 1px 4px',
+          paddingBlock: 0,                   // ⬅ remove o “padding” vertical que empurrava a busca pra cima
+          display: 'flex',
+          alignItems: 'center',              // ⬅ centraliza verticalmente TUDO
+          boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
         }}
       >
+        {/* HeaderBar herda height do Header e já alinha os itens */}
         <HeaderBar />
       </Header>
 
-      {/* ⚠️ removemos o max-width padrão e expandimos o conteúdo */}
+      {/* Área de conteúdo expandida, como você queria */}
       <Content
         style={{
           flex: 1,
@@ -34,9 +38,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
           maxWidth: '100%',
           margin: 0,
           padding: '24px 40px',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
         }}
       >
         {children}

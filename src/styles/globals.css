@@ -14,3 +14,18 @@ body,
 * {
   box-sizing: border-box;
 }
+
+
+/* Alinha TUDO verticalmente no HeaderBar */
+.hb-actions {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+/* Cada item do Space também centralizado e com 100% da altura */
+.hb-actions .ant-space-item {
+  height: 100%;
+  display: flex;
+  align-items: center;
+}

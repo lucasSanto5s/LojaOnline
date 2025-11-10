@@ -27,3 +27,10 @@ export async function fetchTopProducts(n = 5): Promise<ApiProduct[]> {
     clearTimeout(t)
   }
 }
+
+export async function fetchAllProducts(): Promise<ApiProduct[]> {
+  const res = await fetch('https://fakestoreapi.com/products', { cache: 'no-store' })
+  if (!res.ok) throw new Error('Erro ao buscar produtos')
+  return res.json()
+}
+
