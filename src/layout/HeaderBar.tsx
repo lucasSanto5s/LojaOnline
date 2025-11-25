@@ -1,9 +1,17 @@
 import React from 'react'
 import {
-  Menu, Input, Space, Button, Avatar, Badge, Switch,
+  Menu,
+  Input,
+  Space,
+  Button,
+  Avatar,
+  Badge,
+  Switch,
 } from 'antd'
 import {
-  ShoppingCartOutlined, UserOutlined, LoginOutlined,
+  ShoppingCartOutlined,
+  UserOutlined,
+  LoginOutlined,
 } from '@ant-design/icons'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '@/store'
@@ -20,11 +28,25 @@ const HeaderBar: React.FC = () => {
 
   const theme = useAppSelector((s) => s.ui.theme)
   const user = useAppSelector((s) => s.auth.currentUser)
-  const cartCount = useAppSelector((s) => s.cart.items.reduce((acc, it) => acc + it.qty, 0))
+  const cartCount = useAppSelector((s) =>
+    s.cart.items.reduce((acc, it) => acc + it.qty, 0),
+  )
+
   const query = useAppSelector((s) => s.products.query)
-  const showSearch = location.pathname.startsWith('/products')
+
+  // exibe a barra de busca na Home e em Products
+  const showSearch =
+    location.pathname === '/' || location.pathname.startsWith('/products')
 
   const [openCart, setOpenCart] = React.useState(false)
+
+  // quando pesquisar, atualiza a query e, se estiver na Home, vai pra /products
+  const handleSearch = (value: string) => {
+    dispatch(setQuery(value))
+    if (!location.pathname.startsWith('/products')) {
+      navigate('/products')
+    }
+  }
 
   return (
     <>
@@ -70,7 +92,7 @@ const HeaderBar: React.FC = () => {
         <Space
           size="middle"
           align="center"
-          className="hb-actions" // ⬅ CSS abaixo garante o centro perfeito
+          className="hb-actions" // alinhamento vertical
         >
           {showSearch && (
             <Input.Search
@@ -78,7 +100,7 @@ const HeaderBar: React.FC = () => {
               allowClear
               value={query}
               onChange={(e) => dispatch(setQuery(e.target.value))}
-              onSearch={(v) => dispatch(setQuery(v))}
+              onSearch={handleSearch}
               style={{ width: 320 }}
             />
           )}
@@ -96,14 +118,21 @@ const HeaderBar: React.FC = () => {
               <Avatar icon={<UserOutlined />} />
               <Button
                 type="text"
-                icon={<Badge count={cartCount} size="small"><ShoppingCartOutlined /></Badge>}
+                icon={
+                  <Badge count={cartCount} size="small">
+                    <ShoppingCartOutlined />
+                  </Badge>
+                }
                 onClick={() => setOpenCart(true)}
               >
                 Cart
               </Button>
               <Button
                 icon={<LoginOutlined />}
-                onClick={() => { dispatch(logout()); navigate('/login') }}
+                onClick={() => {
+                  dispatch(logout())
+                  navigate('/login')
+                }}
               >
                 Logout
               </Button>
@@ -115,7 +144,11 @@ const HeaderBar: React.FC = () => {
               </Button>
               <Button
                 type="text"
-                icon={<Badge count={cartCount} size="small"><ShoppingCartOutlined /></Badge>}
+                icon={
+                  <Badge count={cartCount} size="small">
+                    <ShoppingCartOutlined />
+                  </Badge>
+                }
                 onClick={() => setOpenCart(true)}
               >
                 Cart
