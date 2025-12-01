@@ -1,59 +1,106 @@
-import React from 'react';
-import { Button, Card, Form, Input, Typography, message } from 'antd';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useAppDispatch } from '@/store';
-import { loginSuccess } from '@/store/slices/authSlice';
+import React from 'react'
+import {
+  Card,
+  Typography,
+  Form,
+  Input,
+  Button,
+  App,
+} from 'antd'
+import { useNavigate } from 'react-router-dom'
+import { useAppDispatch, useAppSelector } from '@/store'
+import { loginSuccess, type AppUser } from '@/store/slices/authSlice'
 
-const { Title } = Typography;
+const { Title } = Typography
 
-type FormValues = { email: string; password: string };
+const LoginPage: React.FC = () => {
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+  const { message } = App.useApp()
 
-const Login: React.FC = () => {
-  const [loading, setLoading] = React.useState(false);
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
-  const location = useLocation() as any;
+  const users = useAppSelector((s) => s.auth.users)
 
-  const onFinish = (values: FormValues) => {
-    setLoading(true);
-    try {
-      // usuários seed guardados em localStorage pela ensureSeed
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      const found = users.find((u: any) => u.email === values.email && u.password === values.password);
-      if (!found) {
-        message.error('Usuário ou senha inválidos');
-      } else {
-        dispatch(loginSuccess({ id: found.id, name: found.name, email: found.email, role: found.role }));
-        message.success('Login realizado com sucesso');
-        const redirectTo = location.state?.from?.pathname || '/';
-        navigate(redirectTo, { replace: true });
-      }
-    } finally {
-      setLoading(false);
+  const [loading, setLoading] = React.useState(false)
+
+  const onFinish = async (values: any) => {
+    setLoading(true)
+
+    const { email, password } = values
+
+    // Procura usuário com o email informado
+    const user = users.find((u) => u.email.toLowerCase() === email.toLowerCase())
+
+    if (!user) {
+      setLoading(false)
+      message.error('Usuário não encontrado.')
+      return
     }
-  };
+
+    // Verifica senha
+    if (user.password !== password) {
+      setLoading(false)
+      message.error('Senha incorreta.')
+      return
+    }
+
+    // Sucesso → login
+    dispatch(loginSuccess(user))
+    message.success(`Bem-vindo, ${user.name}!`)
+
+    setLoading(false)
+    navigate('/')
+  }
 
   return (
-    <div style={{ display:'flex', justifyContent:'center', marginTop: 48 }}>
-      <Card style={{ width: 360 }}>
-        <Title level={3} style={{ textAlign: 'center' }}>Login</Title>
+    <div
+      style={{
+        display: 'flex',
+        justifyContent: 'center',
+        paddingTop: 80,
+      }}
+    >
+      <Card style={{ width: 420 }}>
+        <Title level={3} style={{ textAlign: 'center', marginBottom: 32 }}>
+          Login
+        </Title>
+
         <Form layout="vertical" onFinish={onFinish}>
-          <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Informe o email' }, { type: 'email' }]}>
+          <Form.Item
+            label="Email"
+            name="email"
+            rules={[
+              { required: true, message: 'Informe o email' },
+              { type: 'email', message: 'Email inválido' },
+            ]}
+          >
             <Input placeholder="admin@admin.com" />
           </Form.Item>
-          <Form.Item name="password" label="Senha" rules={[{ required: true, message: 'Informe a senha' }]}>
-            <Input.Password placeholder="admin123" />
+
+          <Form.Item
+            label="Senha"
+            name="password"
+            rules={[{ required: true, message: 'Informe a senha' }]}
+          >
+            <Input.Password placeholder="********" />
           </Form.Item>
-          <Button type="primary" htmlType="submit" block loading={loading}>
+
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            loading={loading}
+            style={{ marginTop: 8 }}
+          >
             Entrar
           </Button>
         </Form>
-        <div style={{ marginTop: 12, fontSize: 12, opacity: 0.7 }}>
+
+        <p style={{ marginTop: 16, fontSize: 12, textAlign: 'center' }}>
           Dica: admin@admin.com / admin123 • user@demo.com / user123
-        </div>
+        </p>
       </Card>
     </div>
-  );
-};
+  )
+}
 
-export default Login;
+export default LoginPage

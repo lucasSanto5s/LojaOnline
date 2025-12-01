@@ -1,13 +1,32 @@
 import React from 'react'
 import {
-  Drawer, List, Avatar, Button, Space, Typography, Popconfirm, App, Divider,
+  Drawer,
+  List,
+  Avatar,
+  Button,
+  Space,
+  Typography,
+  Popconfirm,
+  App,
+  Divider,
 } from 'antd'
 import {
-  MinusOutlined, PlusOutlined, DeleteOutlined, ShoppingCartOutlined,
+  MinusOutlined,
+  PlusOutlined,
+  DeleteOutlined,
+  ShoppingCartOutlined,
 } from '@ant-design/icons'
-import { useAppDispatch, useAppSelector } from '@/store'
-import { selectCart, selectCartTotal, increment, decrement, remove, clear } from '@/store/slices/cartSlice'
 import { useNavigate } from 'react-router-dom'
+import { useAppDispatch, useAppSelector } from '@/store'
+import {
+  selectCart,
+  selectCartTotal,
+  increment,
+  decrement,
+  remove,
+  clear,
+} from '@/store/slices/cartSlice'
+import { addOrder } from '@/store/slices/ordersSlice'
 
 type Props = {
   open: boolean
@@ -23,7 +42,7 @@ const CartDrawer: React.FC<Props> = ({ open, onClose }) => {
 
   const items = useAppSelector(selectCart)
   const total = useAppSelector(selectCartTotal)
-  const user = useAppSelector(s => s.auth.currentUser)
+  const user = useAppSelector((s) => s.auth.currentUser)
 
   const finalize = () => {
     if (!user) {
@@ -38,76 +57,98 @@ const CartDrawer: React.FC<Props> = ({ open, onClose }) => {
       return
     }
 
-    message.success('Compra finalizada com sucesso! 🎉')
+    // cria o pedido no Redux + localStorage
+    dispatch(
+      addOrder({
+        userId: user.id,
+        createdAt: new Date().toISOString(),
+        total,
+        items: items.map((it: any) => ({
+          id: it.id,
+          title: it.title,
+          price: it.price,
+          qty: it.qty,
+          image: it.image,
+        })),
+      }),
+    )
+
     dispatch(clear())
     onClose()
-  }
-
-  const clearAll = () => {
-    if (items.length === 0) return
-    dispatch(clear())
-    message.success('Carrinho limpo.')
+    message.success('Compra finalizada com sucesso! 🎉')
   }
 
   return (
     <Drawer
-      title={<Space><ShoppingCartOutlined /> <span>Meu Carrinho</span></Space>}
-      placement="right"
+      title="Cart"
       open={open}
       onClose={onClose}
       width={420}
+      destroyOnClose
+      maskClosable
     >
-      <List
-        dataSource={items}
-        locale={{ emptyText: 'Nenhum produto no carrinho' }}
-        renderItem={(it) => (
-          <List.Item
-            actions={[
-              <Space key="qty">
-                <Button size="small" icon={<MinusOutlined />} onClick={() => dispatch(decrement(it.id))} />
-                <Text strong>{it.qty}</Text>
-                <Button size="small" icon={<PlusOutlined />} onClick={() => dispatch(increment(it.id))} />
-              </Space>,
-              <Button
-                key="rm"
-                danger
-                size="small"
-                icon={<DeleteOutlined />}
-                onClick={() => dispatch(remove(it.id))}
-              />,
-            ]}
+      {items.length === 0 ? (
+        <Text type="secondary">Seu carrinho está vazio.</Text>
+      ) : (
+        <>
+          <List
+            dataSource={items}
+            itemLayout="horizontal"
+            renderItem={(item: any) => (
+              <List.Item
+                actions={[
+                  <Button
+                    key="minus"
+                    size="small"
+                    icon={<MinusOutlined />}
+                    onClick={() => dispatch(decrement(item.id))}
+                  />,
+                  <Text key="qty">x{item.qty}</Text>,
+                  <Button
+                    key="plus"
+                    size="small"
+                    icon={<PlusOutlined />}
+                    onClick={() => dispatch(increment(item.id))}
+                  />,
+                  <Popconfirm
+                    key="del"
+                    title="Remover item?"
+                    okText="Remover"
+                    okButtonProps={{ danger: true }}
+                    onConfirm={() => dispatch(remove(item.id))}
+                  >
+                    <Button size="small" danger icon={<DeleteOutlined />} />
+                  </Popconfirm>,
+                ]}
+              >
+                <List.Item.Meta
+                  avatar={<Avatar shape="square" src={item.image} />}
+                  title={item.title}
+                  description={`US$ ${item.price.toFixed(2)}`}
+                />
+              </List.Item>
+            )}
+          />
+
+          <Divider />
+
+          <Space
+            style={{ width: '100%', justifyContent: 'space-between' }}
+            align="center"
           >
-            <List.Item.Meta
-              avatar={<Avatar shape="square" size={48} src={it.image} />}
-              title={<Text ellipsis={{ tooltip: it.title }}>{it.title}</Text>}
-              description={<Text type="secondary">US$ {it.price.toFixed(2)}</Text>}
-            />
-            <div><Text>US$ {(it.price * it.qty).toFixed(2)}</Text></div>
-          </List.Item>
-        )}
-      />
-
-      <Divider />
-
-      <Space style={{ width: '100%', justifyContent: 'space-between', marginBottom: 8 }}>
-        <Title level={5} style={{ margin: 0 }}>Total</Title>
-        <Title level={4} style={{ margin: 0 }}>US$ {total.toFixed(2)}</Title>
-      </Space>
-
-      <Space style={{ width: '100%', justifyContent: 'space-between' }}>
-        <Popconfirm
-          title="Limpar carrinho?"
-          okText="Limpar"
-          okButtonProps={{ danger: true }}
-          onConfirm={clearAll}
-        >
-          <Button danger>Limpar</Button>
-        </Popconfirm>
-
-        <Button type="primary" onClick={finalize}>
-          Finalizar compra
-        </Button>
-      </Space>
+            <Title level={4} style={{ margin: 0 }}>
+              Total: US$ {total.toFixed(2)}
+            </Title>
+            <Button
+              type="primary"
+              icon={<ShoppingCartOutlined />}
+              onClick={finalize}
+            >
+              Finalizar Compra
+            </Button>
+          </Space>
+        </>
+      )}
     </Drawer>
   )
 }

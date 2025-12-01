@@ -31,21 +31,16 @@ const HeaderBar: React.FC = () => {
   const cartCount = useAppSelector((s) =>
     s.cart.items.reduce((acc, it) => acc + it.qty, 0),
   )
-
   const query = useAppSelector((s) => s.products.query)
 
-  // exibe a barra de busca na Home e em Products
+  // mostra busca no Home e na página de Products
   const showSearch =
     location.pathname === '/' || location.pathname.startsWith('/products')
 
   const [openCart, setOpenCart] = React.useState(false)
 
-  // quando pesquisar, atualiza a query e, se estiver na Home, vai pra /products
-  const handleSearch = (value: string) => {
-    dispatch(setQuery(value))
-    if (!location.pathname.startsWith('/products')) {
-      navigate('/products')
-    }
+  const goToProfile = () => {
+    navigate('/profile')
   }
 
   return (
@@ -75,6 +70,7 @@ const HeaderBar: React.FC = () => {
             { key: '/', label: <Link to="/">Home</Link> },
             { key: '/products', label: <Link to="/products">Products</Link> },
             { key: '/clients', label: <Link to="/clients">Clients</Link> },
+            { key: '/users', label: <Link to="/users">Users</Link> },
           ]}
           style={{
             background: 'transparent',
@@ -92,7 +88,7 @@ const HeaderBar: React.FC = () => {
         <Space
           size="middle"
           align="center"
-          className="hb-actions" // alinhamento vertical
+          className="hb-actions"
         >
           {showSearch && (
             <Input.Search
@@ -100,7 +96,7 @@ const HeaderBar: React.FC = () => {
               allowClear
               value={query}
               onChange={(e) => dispatch(setQuery(e.target.value))}
-              onSearch={handleSearch}
+              onSearch={(v) => dispatch(setQuery(v))}
               style={{ width: 320 }}
             />
           )}
@@ -114,8 +110,24 @@ const HeaderBar: React.FC = () => {
 
           {user ? (
             <>
-              <span style={{ textTransform: 'uppercase' }}>{user.name}</span>
-              <Avatar icon={<UserOutlined />} />
+              {/* Nome + avatar clicáveis -> perfil */}
+              <Space
+                align="center"
+                onClick={goToProfile}
+                style={{ cursor: 'pointer' }}
+              >
+                <span style={{ textTransform: 'uppercase' }}>
+                  {user.name}
+                </span>
+                <Avatar
+                  src={user.avatar}
+                  icon={!user.avatar && <UserOutlined />}
+                >
+                  {!user.avatar &&
+                    user.name?.charAt(0)?.toUpperCase()}
+                </Avatar>
+              </Space>
+
               <Button
                 type="text"
                 icon={
@@ -127,6 +139,7 @@ const HeaderBar: React.FC = () => {
               >
                 Cart
               </Button>
+
               <Button
                 icon={<LoginOutlined />}
                 onClick={() => {
