@@ -7,7 +7,7 @@ import auth from './slices/authSlice'
 import products from './slices/productsSlice'
 import clients from './slices/clientsSlice'
 import cart from './slices/cartSlice'
-import orders from './slices/ordersSlice' // ou '@/store/slices/ordersSlice' se preferir o alias
+import orders from './slices/ordersSlice' 
 import { ensureSeed } from '@/utils/seed'
 
 const store = configureStore({
@@ -17,8 +17,7 @@ const store = configureStore({
     products,
     clients,
     cart,
-    orders, // ⬅️
- novo slice de pedidos
+    orders,
   },
   middleware: getDefault => getDefault().concat(persist),
 })

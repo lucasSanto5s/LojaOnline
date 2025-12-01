@@ -25,7 +25,7 @@ type OrdersState = {
 const ORDERS_KEY = 'orders'
 
 const initialState: OrdersState = {
-  items: getJSON<Order[]>(ORDERSKEY, []),
+  items: getJSON<Order[]>(ORDERS_KEY, []),   // ✅ corrigido
 }
 
 const ordersSlice = createSlice({
@@ -35,13 +35,14 @@ const ordersSlice = createSlice({
     addOrder(state, action: PayloadAction<Omit<Order, 'id'>>) {
       const newOrder: Order = {
         ...action.payload,
-        id: `o${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+        id: `o${Date.now()}_${Math.random().toString(36).slice(2, 8)}`, // id único
       }
+
       state.items.push(newOrder)
-      setJSON(ORDERS_KEY, state.items)
+      setJSON(ORDERS_KEY, state.items) // salva no localStorage
     },
 
-    // opcional, se algum dia quiser limpar tudo
+    // opcional — limpa tudo, útil para testes
     clearAllOrders(state) {
       state.items = []
       setJSON(ORDERS_KEY, state.items)
