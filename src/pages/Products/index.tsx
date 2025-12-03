@@ -10,7 +10,7 @@ import { CATEGORIES, setAll, setQuery, addProduct, updateProduct, removeProduct,
 import { useNavigate } from 'react-router-dom'
 
 const { Title, Paragraph, Text } = Typography
-
+const PLACEHOLDER_IMAGE = "https://fakestoreapi.com/img/71pWzhdJNwL._AC_UL640_QL65_ML3_t.png";
 const Products: React.FC = () => {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
@@ -30,21 +30,21 @@ const Products: React.FC = () => {
   // carrega base inicial se não houver nada
   React.useEffect(() => {
     if (loaded || products.length > 0) return
-    ;(async () => {
-      try {
-        const api = await fetchAllProducts()
-        const mapped: Product[] = api.map(p => ({
-          id: p.id,
-          title: p.title,
-          price: Number(p.price),
-          description: p.description,
-          image: p.image,
-          category: p.category,
-          rating: p.rating,
-        }))
-        dispatch(setAll(mapped))
-      } catch {}
-    })()
+      ; (async () => {
+        try {
+          const api = await fetchAllProducts()
+          const mapped: Product[] = api.map(p => ({
+            id: p.id,
+            title: p.title,
+            price: Number(p.price),
+            description: p.description,
+            image: p.image,
+            category: p.category,
+            rating: p.rating,
+          }))
+          dispatch(setAll(mapped))
+        } catch { }
+      })()
   }, [loaded, products.length, dispatch])
 
   // === ações ===
@@ -126,7 +126,15 @@ const Products: React.FC = () => {
             >
               <Flex vertical gap={8}>
                 <div style={{ display: 'grid', placeItems: 'center', height: 180 }}>
-                  <Image src={p.image} alt={p.title} width={160} height={160} style={{ objectFit: 'contain' }} preview />
+                  <Image
+                    src={p.image || PLACEHOLDER_IMAGE}
+                    alt={p.title}
+                    width={160}
+                    height={160}
+                    style={{ objectFit: 'contain' }}
+                    fallback={PLACEHOLDER_IMAGE}
+                    preview={!!p.image}
+                  />
                 </div>
 
                 <Text strong ellipsis={{ tooltip: p.title }}>{p.title}</Text>
@@ -212,7 +220,7 @@ const Products: React.FC = () => {
           </Form.Item>
 
           <Form.Item name="image" label="Image URL" rules={[{ required: true, message: 'Informe a URL da imagem' }]}>
-            <Input placeholder="https://..." />
+            <Input placeholder="https://fakestoreapi.com/img/71pWzhdJNwL._AC_UL640_QL65_ML3_t.png" />
           </Form.Item>
 
           <Flex justify="end" gap={8}>
