@@ -22,10 +22,45 @@ type AuthState = {
 const USERS_KEY = 'users'
 const CURRENT_KEY = 'currentUser'
 
-// === Carrega os usuários (já seedados pelo utils/seed.ts) ===
-const initialUsers = getJSON<AppUser[]>(USERS_KEY, [])
+// ============================
+// Seeds padrão (iguais ao seed.ts)
+// ============================
+const defaultSeedUsers: AppUser[] = [
+  {
+    id: 'u1',
+    name: 'ADMIN',
+    email: 'admin@admin.com',
+    password: 'admin123',
+    role: 'admin',
+  },
+  {
+    id: 'u2',
+    name: 'JOHN',
+    email: 'user@demo.com',
+    password: 'user123',
+    role: 'user',
+  },
+]
 
-// === Carrega usuário logado, se existir ===
+// ============================
+// Carrega usuários do localStorage
+// se vier vazio, usa os seeds e já grava
+// ============================
+const usersFromStorage = getJSON<AppUser[]>(USERS_KEY, [])
+
+const initialUsers: AppUser[] =
+  usersFromStorage && usersFromStorage.length > 0
+    ? usersFromStorage
+    : defaultSeedUsers
+
+// se não havia nada salvo, grava os seeds
+if (!usersFromStorage || usersFromStorage.length === 0) {
+  setJSON(USERS_KEY, initialUsers)
+}
+
+// ============================
+// Carrega usuário logado, se existir
+// ============================
 const initialCurrentUser = getJSON<AppUser | null>(CURRENT_KEY, null)
 
 const initialState: AuthState = {
@@ -54,7 +89,7 @@ const slice = createSlice({
     },
 
     // =========================================
-    // CRUD DE USUÁRIOS (GERENCIAMENTO DE USUÁRIOS)
+    // CRUD DE USUÁRIOS
     // =========================================
 
     // CREATE
