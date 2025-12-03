@@ -43,6 +43,17 @@ const HeaderBar: React.FC = () => {
     navigate('/profile')
   }
 
+  // quando clicar na lupa / Enter
+  const handleSearch = (value: string) => {
+    const trimmed = value.trim()
+    dispatch(setQuery(trimmed))
+
+    // se não estiver na tela de produtos, navega pra lá
+    if (location.pathname !== '/products') {
+      navigate('/products')
+    }
+  }
+
   return (
     <>
       <div
@@ -96,7 +107,7 @@ const HeaderBar: React.FC = () => {
               allowClear
               value={query}
               onChange={(e) => dispatch(setQuery(e.target.value))}
-              onSearch={(v) => dispatch(setQuery(v))}
+              onSearch={handleSearch} // <=== aqui faz buscar + navegar
               style={{ width: 320 }}
             />
           )}
